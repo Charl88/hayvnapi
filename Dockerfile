@@ -1,10 +1,8 @@
 FROM golang:1.17
 
-COPY * /app
+WORKDIR $GOPATH/src/hayvnapi
 
-WORKDIR /app
-
-RUN export GOPRIVATE="gitlab.com/Charl88/hayvnapi"
+COPY . .
 
 RUN make install
 
