@@ -2,7 +2,7 @@
 
 To build the docker container
 
-`docker build --tag hayvnapi`
+`docker build --tag hayvnapi .`
 
 To run the docker container on localhost:3000
 
