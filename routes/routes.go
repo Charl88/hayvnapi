@@ -10,7 +10,7 @@ import (
 	"github.com/swaggest/usecase/status"
 )
 
-func MessageReceiver(messageArray *shared.MessageArray) usecase.IOInteractor {
+func MessageReceiver(messageQueue *shared.MessageArray) usecase.IOInteractor {
 
 	type messagesInput struct {
 		Destination string `json:"destination" description:"The destination channel for the message" required:"true" example:"compliance"`
@@ -29,7 +29,8 @@ func MessageReceiver(messageArray *shared.MessageArray) usecase.IOInteractor {
 			Timestamp:   in.Timestamp,
 		}
 
-		messageArray.Messages = append(messageArray.Messages, message)
+		// Append the messages to the queue in memory
+		messageQueue.Messages = append(messageQueue.Messages, message)
 
 		return nil
 	})
@@ -50,15 +51,26 @@ func AggregatedMessages() usecase.IOInteractor {
 		var (
 			in = input.(*aggregatedInput)
 		)
+
+		// Aggregate the batched messages into a mapping of the form:
+		// {
+		//    "compliance": Array of messages,
+		//	  "operations": Array of messages,
+		// }
+		// So that we can easily check for duplicate destinations, by
+		// checking if the mapping already exists
 		process := make(map[string][]shared.BatchMessage)
 		for i := 0; i < len(in.Batches); i++ {
 			batch := in.Batches[i]
 			_, ok := process[batch.Destination]
 			if !ok {
+				// If the mapping doesn't exist yet, we submit the messages
 				process[batch.Destination] = batch.Messages
 				log.Printf("Aggregated Messages - sending to %s - %s", batch.Destination, batch.Messages)
 				// Send the messages to the required destination (maybe via GRPC?)
 			} else {
+				// If the mapping does exist, it means the destination has already been used and
+				// it is a duplicate destination
 				return status.Wrap(errors.New("multiple batches contained the same destination"), status.InvalidArgument)
 			}
 		}

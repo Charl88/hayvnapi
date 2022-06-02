@@ -29,6 +29,7 @@ func AggregateMessages(messageQueue *shared.MessageArray) (shared.BatchArray, er
 		}
 	}
 
+	// Construct the batched messages struct from the mapping we created above
 	batches := []shared.Batch{}
 	for key, value := range batchMap {
 		batches = append(batches, shared.Batch{

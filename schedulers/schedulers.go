@@ -31,6 +31,7 @@ func CreateMessageScheduler(messageQueue *shared.MessageArray) {
 		(*messageQueue) = shared.MessageArray{}
 
 		if len(batchArray.Batches) > 0 {
+			// Encode the batched messages into json and send to the API via a POST request
 			postBody, err := json.Marshal(batchArray)
 			if err != nil {
 				log.Printf("Scheduler - Could not marshal batched messages to json - %s", err)
@@ -40,7 +41,7 @@ func CreateMessageScheduler(messageQueue *shared.MessageArray) {
 
 			resp, err := http.Post("http://localhost:3000/aggregated-messages", "application/json", body)
 			if err != nil {
-				log.Printf("Scheduler - Could perform the post request to https://localhost:3000/aggregated-messages - %s", err)
+				log.Printf("Scheduler - Could not perform the post request to https://localhost:3000/aggregated-messages - %s", err)
 			}
 			defer resp.Body.Close()
 		}
